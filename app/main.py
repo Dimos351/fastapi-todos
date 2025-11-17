@@ -43,7 +43,10 @@ def update_todo(todo_id: int, item: TodoCreate):
     for index, todo_task in enumerate(todos):
         if todo_task.id == todo_id:
             update_todo = Todo(
-                id=next_id, title=item.title, description=item.description, dome=False
+                id=todo_task.id, 
+                title=item.title, 
+                description=item.description, 
+                dome=item.done if hasattr(item, "done") else todo_task.done
             )
             todos[index] = update_todo
             return update_todo
