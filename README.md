@@ -1,108 +1,194 @@
-FastAPI CRUD + Simple Key Auth
+# FastAPI Todo API — Clean Structure Learning Project
 
-A simple learning project built with **FastAPI**, featuring:
+This project is a **learning-friendly FastAPI application** that demonstrates how to build a clean and maintainable API using:
 
-- Basic HTTP & REST concepts
-- CRUD operations for Todo items (in-memory)
-- Pydantic reques/response models
-- Simple API Key authorization
-- Fully testable through Postman, curl, or the built-in `/docs` Swagger UI
+- FastAPI routers  
+- Pydantic models (schemas)  
+- A simple in-memory data store  
+- Clean separation of concerns (routes → CRUD → storage → schemas)  
+- Basic API Key authentication  
+
+Designed for beginners who want to understand **proper backend structure**, not just “make an endpoint work”.
 
 ---
 
-## 🚀 Features
+# 🚀 Features
 
 ### ✔ CRUD Endpoints
-- `Get /todos` - list all todos
-- `Post /todos` - create a new todos
-- `Get /todos/{todo_id}` - get todo by ID
-- `Put /todos/{todo_id}` - update an existing todo
-- `Delete /todos/{todo_id}` - delete a todo
+All endpoints operate on an in-memory Todo list:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/todos` | List all todos |
+| POST | `/todos` | Create a new todo |
+| GET | `/todos/{todo_id}` | Get todo by ID |
+| PUT | `/todos/{todo_id}` | Update an existing todo |
+| DELETE | `/todos/{todo_id}` | Delete todo |
 
 ### ✔ Secure Endpoint
+A simple API Key protected route:
 
-Protected with a simple API key (`x-api-key` header):
-    GET /secure
+```
+GET /secure
+```
 
-### ✔ API Key Example
+Requires the header:
 
-Add the header:
-    x-api-key: supersecret
+```
+x-api-key: supersecret
+```
 
----
+### ✔ Clean Architecture (Educational)
+The project is structured to imitate real-world backend design:
 
-## 📦 Project Structure
-
-    project/
-    │
-    ├── app/
-    │   ├── main.py        # FastAPI application with routes
-    │   ├── auth.py        # API key authorization logic
-    │   ├── schemas.py     # Pydantic models
-    │
-    ├── README.md          # Project documentation
-    └── requirements.txt   # Project dependencies
+- **main.py** — HTTP layer (routes only)
+- **crud.py** — business logic and data transformations
+- **storage.py** — in-memory “database” abstraction
+- **schemas.py** — Pydantic models & validation
+- **auth.py** — simple API key authentication
 
 ---
 
-## 📚 Requirements
+# 📦 Project Structure
+
+```
+project/
+│
+├── auth.py        # API key validation dependency
+├── crud.py        # CRUD logic and helpers
+├── main.py        # FastAPI app with route handlers
+├── schemas.py     # Pydantic models for requests/responses
+├── storage.py     # In-memory data storage class
+│
+├── README.md
+└── requirements.txt
+```
+
+This structure teaches how to **avoid mixing routing, logic, and data storage** — a common beginner mistake.
+
+---
+
+# 🧠 How It Works (Architecture Explained)
+
+### 1. **Routes (main.py)**  
+Handle incoming HTTP requests and return responses.  
+They **do not contain logic** — only call CRUD functions.
+
+### 2. **CRUD Layer (crud.py)**  
+Contains all business logic:
+
+- updating fields  
+- validating data  
+- raising errors  
+
+This keeps the API clean and testable.
+
+### 3. **Storage Layer (storage.py)**  
+An in-memory “database” wrapped in a class:
+
+- `add()`  
+- `get()`  
+- `all()`  
+- `delete()`  
+
+Later, this can easily be swapped with PostgreSQL or SQLAlchemy.
+
+### 4. **Schemas (schemas.py)**  
+Define how todo items look:
+
+- `Todo`
+- `TodoCreate`
+- `TodoUpdate`
+- `TodoBase`
+
+This ensures consistent request/response structure.
+
+### 5. **Auth (auth.py)**  
+Simple API key check using the `x-api-key` header.
+
+---
+
+# 📚 Requirements
 
 Install dependencies:
 
-``` bash 
+```bash
 pip install -r requirements.txt
 ```
 
-Or install manually.
+Or manually install:
+
+```bash
+pip install fastapi uvicorn pydantic
+```
 
 ---
 
-## ▶ Running the Server
+# ▶ Running the Server
 
 Start the FastAPI development server:
 
 ```bash
-uvicorn app.main:app --reload
+uvicorn main:app --reload
 ```
 
-Server will be available at:
+Server runs at:
 
-    http://127.0.0.1:8000
+```
+http://127.0.0.1:8000
+```
 
-Swagger UI docs:
+Interactive API docs:
 
-    http://127.0.0.1:8000/docs
+```
+http://127.0.0.1:8000/docs
+```
 
 ---
 
-## 🧪 Testing the API
+# 🧪 Testing the API
 
-### ✔ Test in Postman
+### ✔ Postman Example
 
-Add this header:
+Add the header:
 
-    x-api-key: supersecret
+```
+x-api-key: supersecret
+```
 
-Send request to:
+Request:
 
-    GET http://127.0.0.1:8000/secure
+```
+GET http://127.0.0.1:8000/secure
+```
 
-### ✔ Test with curl
+### ✔ curl Example
 
-``` bash
+```bash
 curl -H "x-api-key: supersecret" http://127.0.0.1:8000/secure
 ```
 
 ---
 
-## 💾 Notes
+# 💾 Notes
 
--   Todos are stored **in memory** --- restarting the server resets
-    them.
--   This project is for educational purposes.
+- Todos are stored **in memory** — restarting the server resets all data.
+- This project is intended for **learning clean architecture in FastAPI**, not production use.
+- The design makes it easy to switch to a real database (PostgreSQL, SQLAlchemy, etc.)
 
 ---
 
-## 📝 License
+# 🔮 Future Improvements (Suggested)
+
+- Replace in-memory storage with PostgreSQL  
+- Add SQLAlchemy models + Alembic migrations  
+- Implement JWT authentication  
+- Add pagination  
+- Add unit tests using `pytest` and `TestClient`  
+- Introduce service/repository layers (full Clean Architecture)
+
+---
+
+# 📝 License
 
 MIT License

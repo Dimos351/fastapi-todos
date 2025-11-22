@@ -1,14 +1,18 @@
 from fastapi import FastAPI, HTTPException, Request, Depends
-from fastapi.responses import JSONResponse
-from app.schemas import Todo, TodoCreate 
-from app.auth import get_api_key  
 from typing import List
+
+from fastapi.responses import JSONResponse
+from .schemas import Todo, TodoCreate, TodoUpdate
+from .auth import get_api_key  
+from .storage import TodoStorage
+from .crud import update_todo
+
 
 
 app = FastAPI()
 
-todos: List[Todo] = []
-next_id = 1
+storage = TodoStorage()
+
 
 
 @app.get("/secure", dependencies=[Depends(get_api_key)])
@@ -18,48 +22,38 @@ def get_secure_todos():
 
 @app.get("/todos", response_model=List[Todo])
 def get_todos():
-    return todos
+    return storage.all()
 
 
 @app.post("/todos", response_model=Todo, status_code=201)
-def create_todo(item: TodoCreate):
-    global next_id
-    todo = Todo(id=next_id, title=item.title, description=item.description, dome=False)
-    next_id += 1
-    todos.append(todo)
+def create_todo(data: TodoCreate):
+    todo = Todo(id=0, **data.dict())
+    return storage.add(todo)
+
+
+@app.get("/todos/{todo_id}", response_model = Todo)
+def get_todo(todo_id: int):
+    todo = storage.get(todo_id)
+    if not todo:
+        raise HTTPException(status_code=404, detail="Todo not found")
     return todo
 
 
-@app.get("/todos/{todo_id}")
-def get_todo(todo_id: int):
-    for i in todos:
-        if i.id == todo_id:
-            return i
-    raise HTTPException(status_code=404, detail="Todo not found")
+@app.put("/todos/{todo_id}", response_model=Todo)
+def put_todo(todo_id: int, data: TodoUpdate):
+    todo = storage.get(todo_id)
+    if not todo:
+        raise HTTPException(404, "Todo not found")
 
-
-@app.put("/todos/{todo_id}")
-def update_todo(todo_id: int, item: TodoCreate):
-    for index, todo_task in enumerate(todos):
-        if todo_task.id == todo_id:
-            update_todo = Todo(
-                id=todo_task.id, 
-                title=item.title, 
-                description=item.description, 
-                dome=item.done if hasattr(item, "done") else todo_task.done
-            )
-            todos[index] = update_todo
-            return update_todo
-    raise HTTPException(status_code=404, detail="Todo not found")
+    updated = update_todo(todo, data)
+    return updated
 
 
 @app.delete("/todos/{todo_id}", status_code=204)
 def delete_todo(todo_id: int):
-    for index, todo_task in enumerate(todos):
-        if todo_task.id == todo_id:
-            todos.pop(index)
-            return
-    raise HTTPException(status_code=404, detail="Todo not found")
+    ok = storage.delete(todo_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Todo not found")
 
 
 @app.exception_handler(Exception)

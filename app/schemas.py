@@ -10,6 +10,10 @@ class TodoBase(BaseModel):
 class TodoCreate(TodoBase):
     pass
 
+class TodoUpdate(BaseModel):
+    title: Optional[str]
+    description: Optional[str]
+    done: Optional[bool]
 
 class Todo(TodoBase):
     id: int
